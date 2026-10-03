@@ -1,12 +1,12 @@
 # ASCII FBX 导入说明
 
-适用：BomberStudio Blender Bridge 1.0.1 及之后版本；当前统一安装包为 1.0.2。
+适用：BomberStudio Blender Bridge 1.0.1 及之后版本；当前统一安装包为 1.1.0。
 
 ## 出现 `ASCII FBX files are not supported`
 
 FBX 有文本（ASCII）和二进制两种存储形式。遇到原生导入器拒绝文本 FBX 时：
 
-1. 在首选项中确认 BomberStudio 插件已启用，当前版本为 1.0.2。
+1. 在首选项中确认 BomberStudio 插件已启用，当前版本为 1.1.0。
 2. 磁盘更新插件后，保存工作并重启 Blender。
 3. 使用 **BomberStudio → 导入 BomberStudio 模型**，选原始 FBX。
 4. 插件先读取并转换 ASCII，在当前场景设置的临时目录生成二进制缓存，再交给对应版本的原生 FBX 导入器。
@@ -45,7 +45,7 @@ FBX 有文本（ASCII）和二进制两种存储形式。遇到原生导入器�
 
 ## 验证与范围
 
-1.0.1 的真实 ASCII 样本曾在六个 Windows x64 Blender 版本导入成功，检查到 6 个网格、348 根骨骼、8 个非 Basis 形态键和动画。1.0.2 保留同一转换器；本版重新验证的项目见 [兼容验证](./兼容验证.md)。
+1.0.1 的真实 ASCII 样本曾在六个 Windows x64 Blender 版本导入成功，检查到 6 个网格、348 根骨骼、8 个非 Basis 形态键和动画。1.1.0 保留同一转换器；本版重新验证的项目见 [兼容验证](./兼容验证.md)。
 
 - 文本格式版本：FBX 7100～7700；6.x 不在范围内。
 - 单文件上限：512 MiB；另有数组、节点、嵌套深度限制。
