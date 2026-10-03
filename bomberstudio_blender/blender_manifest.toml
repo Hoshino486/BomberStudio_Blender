@@ -1,0 +1,14 @@
+schema_version = "1.0.0"
+id = "bomberstudio_blender"
+version = "1.0.2"
+name = "BomberStudio Blender Bridge"
+tagline = "BomberStudio imports, character tools and texture atlases"
+maintainer = "BomberAi"
+type = "add-on"
+blender_version_min = "4.2.0"
+license = ["SPDX:GPL-3.0-or-later"]
+tags = ["Import-Export", "Material", "Mesh", "Rigging"]
+
+[permissions]
+files = "Read models and write atlases, backups, logs and local updates"
+network = "Check configured repository releases on explicit user request"
