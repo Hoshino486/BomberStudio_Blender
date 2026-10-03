@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 import os
 import bpy
-from . import compat as C, materials
+from . import compat as C, materials, updates
 
 OUTPUT_ROOT = os.path.dirname(C.DEFAULT_TEMP)
 
@@ -81,8 +81,10 @@ class BOMBER_PG_settings(bpy.types.PropertyGroup):
     export_animations = bpy.props.BoolProperty(name='导出 FBX 动画', default=True)
     export_all_actions = bpy.props.BoolProperty(name='导出全部兼容 Action（可能较慢）', default=False)
     export_nla_strips = bpy.props.BoolProperty(name='分别导出 NLA 片段', default=False)
-    update_repository = bpy.props.StringProperty(name='本插件发布仓库', description='owner/repo；未发布前留空，不自动下载第三方插件')
-    update_status = bpy.props.StringProperty(default='仅手动检查；未配置公开发布仓库')
+    update_repository = bpy.props.StringProperty(
+        name='本插件发布仓库', default=updates.DEFAULT_REPOSITORY,
+        description='支持 owner/repo 或完整 GitHub 仓库地址；留空使用默认仓库，可自定义，不自动下载安装')
+    update_status = bpy.props.StringProperty(default='仅手动检查；支持 owner/repo 或完整 GitHub 地址')
     last_status = bpy.props.StringProperty(default='')
 
 

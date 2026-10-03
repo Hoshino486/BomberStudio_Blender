@@ -320,6 +320,7 @@ class BOMBER_PT_updates(PanelBase, bpy.types.Panel):
         layout.prop(cfg, 'update_repository')
         manage_button(layout, 'CHECK_UPDATE', '手动检查本插件更新（15 秒超时）')
         layout.label(text=cfg.update_status[:90])
+        manage_button(layout, 'OPEN_RELEASE', '打开 GitHub 发布页 / 下载更新')
         layout.operator('bomberstudio.install_update')
         manage_button(layout, 'RESTORE_UPDATE', '还原上一次插件备份')
         layout.label(text='更新不自动安装，安装 / 回滚后重启 Blender')

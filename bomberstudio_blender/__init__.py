@@ -3,7 +3,7 @@
 bl_info = {
     'name': 'BomberStudio Blender Bridge',
     'author': 'BomberAi',
-    'version': (1, 1, 0),
+    'version': (1, 1, 1),
     'blender': (2, 79, 0),
     'location': 'View3D > Sidebar > BomberStudio (2.79: Tool Shelf)',
     'description': 'BomberStudio 导入、模型整理、骨架口型眼球、贴图预览与 PBR 图集',

@@ -10,7 +10,7 @@ import struct
 import time
 import uuid
 
-VERSION = (1, 1, 0)
+VERSION = (1, 1, 1)
 IMAGE_EXTENSIONS = ('.png', '.tga', '.jpg', '.jpeg', '.bmp', '.dds', '.tif', '.tiff', '.exr')
 SIDECARS = ('.genshin.json', '.starrail.json', '.hi3.json', '.zzz.json')
 

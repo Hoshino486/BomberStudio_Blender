@@ -5,13 +5,11 @@ import os
 import re
 import shutil
 import time
-import urllib.error
-import urllib.request
 import uuid
 import zipfile
 import bpy
 from bpy_extras.io_utils import ImportHelper
-from . import compat as C, core
+from . import compat as C, core, updates
 
 
 def validate_addon_zip(filename):
@@ -106,22 +104,19 @@ class BOMBER_OT_manage(bpy.types.Operator):
             if self.action == 'CHECK_UPDATE':
                 if hasattr(bpy.app, 'online_access') and not bpy.app.online_access:
                     raise ValueError('Blender 当前关闭了在线访问；请在首选项启用后手动重试')
-                repo = cfg.update_repository.strip()
-                if not re.match(r'^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$', repo):
-                    raise ValueError("尚未配置本插件发布仓库。填写 owner/repo；不向 MIMI/Cats 下载不相容更新")
-                url = 'https://api.github.com/repos/' + repo + '/releases/latest'
-                request = urllib.request.Request(url, headers={'User-Agent': 'BomberStudio-Blender/' + '.'.join(str(v) for v in core.VERSION),
-                                                               'Accept': 'application/vnd.github+json'})
-                with urllib.request.urlopen(request, timeout=15) as response:
-                    payload = response.read(2*1024*1024+1)
-                    if len(payload) > 2*1024*1024:
-                        raise ValueError("更新元数据超过大小上限")
-                    data = json.loads(payload.decode('utf8'))
-                if not isinstance(data.get('tag_name'), str):
-                    raise ValueError("更新响应缺少版本号")
-                cfg.update_status = '远端版本: ' + data['tag_name'][:80] + '；请下载后使用本地 ZIP 更新'
-                core.atomic_json(os.path.join(C.temp_dir(context), 'last-update-check.json'),
-                                 {'repository': repo, 'tag': data['tag_name'], 'checked': time.strftime('%Y-%m-%d %H:%M:%S')})
+                record = updates.check_latest(cfg.update_repository, core.VERSION)
+                record['checked'] = time.strftime('%Y-%m-%d %H:%M:%S')
+                record['repository_input'] = cfg.update_repository
+                core.atomic_json(os.path.join(C.temp_dir(context), 'last-update-check.json'), record)
+                # Old .blend files may explicitly store an empty setting. Preserve
+                # nonempty custom repositories, including the full pasted URL.
+                if not cfg.update_repository.strip():
+                    cfg.update_repository = record['repository']
+                cfg.update_status = record['status']
+                C.log('更新检查: ' + record['repository'] + ' / ' + record['tag'] + ' / ' + record['relation'], context)
+                self.report({'INFO'}, cfg.update_status)
+            elif self.action == 'OPEN_RELEASE':
+                bpy.ops.wm.url_open(url=updates.releases_url(cfg.update_repository))
             elif self.action == 'RESTORE_UPDATE':
                 receipt = core.read_json(os.path.join(C.temp_dir(context), 'last-update.json'))
                 target = os.path.realpath(os.path.dirname(__file__))
