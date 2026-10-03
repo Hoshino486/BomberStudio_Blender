@@ -1,0 +1,35 @@
+{
+  "provider": "Blender Source Tools",
+  "version": [
+    3,
+    4,
+    3
+  ],
+  "minimum_blender": [
+    4,
+    1,
+    0
+  ],
+  "source": "User-supplied local io_scene_valvesource directory",
+  "integration_date": "2026-10-03",
+  "original_sha256": {
+    "datamodel.py": "43c2b822d6fa895b832941b8df0e142ec77a919ad2138eae2fd2843bd3267112",
+    "export_smd.py": "9fad2bdf16ad5c8ce3f7bebc85a679521ff2cdc95aed49dd114545aec159e356",
+    "flex.py": "c11447aa85e4be635959d33a7dcf150f98939370819cdd14245d9d0c24c25fef",
+    "GUI.py": "6a9cf32b6548e91277f52896c1eaedefdb4d3524e572709a2f56dc4726442abe",
+    "import_smd.py": "3aa77d5ed5cd81e068e797f97e219dd790c1d6a0d4253732f1982c3adab52346",
+    "ordered_set.py": "95d2e63f93e7cac700d984a579bcba6e2393a6e2ec6b641507b83d9cb61cd6d8",
+    "translations.py": "5eaf84412c2e76dff4abca7cbfa350cc52ebadb7c27df48a12ba8771507e79e2",
+    "update.py": "53d6b2dd7cff8815b740d1bdda6f7d7527a121a874a4879dbe24e0fd4cd564a0",
+    "utils.py": "330a55fc72cf7bcb4ec9d4dd0f200dafaf7c358a3154a5d4ec7ba2f87d341d47",
+    "__init__.py": "669c6e1faf1a411138e994dd1c382edc466fb840a64842dc188ccdf5b13600cb"
+  },
+  "modified_files": [
+    "__init__.py",
+    "utils.py",
+    "update.py",
+    "import_smd.py",
+    "export_smd.py",
+    "GUI.py"
+  ]
+}

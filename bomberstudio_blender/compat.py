@@ -203,7 +203,7 @@ def op_available(group, name):
         else:
             operator.get_rna_type()
         return True
-    except (AttributeError, RuntimeError):
+    except (AttributeError, RuntimeError, KeyError):
         return False
 
 

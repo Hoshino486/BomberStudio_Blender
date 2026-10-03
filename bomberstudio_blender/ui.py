@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 import bpy
-from . import compat as C, core, model_ops, rig_ops
+from . import compat as C, core, model_ops, rig_ops, source_tools
 
 
 def model_button(layout, action, text=None):
@@ -61,9 +61,50 @@ class BOMBER_PT_quick(PanelBase, bpy.types.Panel):
         model_button(row, 'JOIN')
         rig_button(layout, 'POSE')
         layout.operator('bomberstudio.export_fbx', icon='EXPORT')
+        layout.operator('bomberstudio.import_source', text='导入 Source (.smd/.vta/.dmx/.qc)', icon='IMPORT')
         layout.label(text='材质旁文件自动修复 UV / 平铺 / 偏移')
         if C.settings(context).last_status:
             layout.label(text=C.settings(context).last_status[:72])
+
+
+
+class BOMBER_PT_source(PanelBase, bpy.types.Panel):
+    bl_idname = 'BOMBER_PT_source'
+    bl_label = 'Source Tools · SMD / VTA / DMX / QC'
+
+    def draw(self, context):
+        layout = self.layout
+        state, message = source_tools.status()
+        layout.label(text=message)
+        if state not in ('BUNDLED', 'EXTERNAL'):
+            if state == 'UNSUPPORTED':
+                layout.label(text='原有 BomberStudio 功能不受影响')
+                layout.label(text='已启用的兼容独立版可继续复用')
+            else:
+                layout.operator('bomberstudio.source_tools', text='启用 / 重试 Source Tools').action = 'ENABLE'
+            return
+        layout.operator('bomberstudio.import_source', icon='IMPORT')
+        cfg = context.scene.vs
+        layout.prop(cfg, 'export_path', text='Source 导出目录')
+        layout.prop(cfg, 'export_format', text='导出格式', expand=True)
+        layout.prop(cfg, 'up_axis', text='向上轴', expand=True)
+        if cfg.export_format == 'DMX':
+            for prop, label in (('dmx_encoding', 'DMX 编码'), ('dmx_format', '模型格式'),
+                                ('material_path', '材质目录'), ('use_kv2', '文本 DMX')):
+                if hasattr(cfg, prop):
+                    layout.prop(cfg, prop, text=label)
+        elif hasattr(cfg, 'smd_format'):
+            layout.prop(cfg, 'smd_format', text='SMD 类型')
+        row = layout.row(align=True)
+        row.operator('bomberstudio.export_source', text='导出选中', icon='EXPORT').export_scene = False
+        row.operator('bomberstudio.export_source', text='导出整个场景').export_scene = True
+        layout.operator('bomberstudio.source_tools', text='刷新导出列表').action = 'ENABLE'
+        if hasattr(cfg, 'export_list'):
+            layout.template_list('SMD_UL_ExportItems', '', cfg, 'export_list', cfg, 'export_list_active', rows=3)
+        layout.label(text='完整设置：属性编辑器 → 场景 → Source Engine')
+        layout.label(text='VTA 随形态键导出；QC 编译需配置游戏 SDK')
+        if state == 'BUNDLED':
+            layout.operator('bomberstudio.source_tools', text='停用内置副本（切换独立版前）').action = 'DISABLE'
 
 
 class BOMBER_PT_model(PanelBase, bpy.types.Panel):
@@ -295,10 +336,11 @@ class BOMBER_PT_credits(PanelBase, bpy.types.Panel):
         layout.label(text='界面与工作流参考 StarBobis / MIMIBlender')
         layout.label(text='角色工具参考 Team Neoneko / Cats')
         layout.label(text='无需同时安装 MIMI / Cats；不复制其自动更新器')
+        layout.label(text='内置 Blender Source Tools 3.4.3 · Tom Edwards')
         layout.label(text='详细功能与测试范围见安装包 README.md')
 
 
-CLASSES = (BOMBER_UL_textures, BOMBER_UL_materials, BOMBER_PT_quick, BOMBER_PT_model, BOMBER_PT_textures,
+CLASSES = (BOMBER_UL_textures, BOMBER_UL_materials, BOMBER_PT_quick, BOMBER_PT_source, BOMBER_PT_model, BOMBER_PT_textures,
            BOMBER_PT_atlas, BOMBER_PT_optimization, BOMBER_PT_custom, BOMBER_PT_mmd, BOMBER_PT_other,
            BOMBER_PT_visemes, BOMBER_PT_parent, BOMBER_PT_scale, BOMBER_PT_eyes, BOMBER_PT_settings,
            BOMBER_PT_updates, BOMBER_PT_credits)
@@ -307,3 +349,4 @@ CLASSES = (BOMBER_UL_textures, BOMBER_UL_materials, BOMBER_PT_quick, BOMBER_PT_m
 def menu_import(self, context):
     self.layout.operator('bomberstudio.import_model', text='BomberStudio Model (.fbx/.obj/...)')
     self.layout.operator('bomberstudio.import_cache', text='BomberStudio Physics Cache (.json)')
+    self.layout.operator('bomberstudio.import_source', text='BomberStudio Source (.smd/.vta/.dmx/.qc)')

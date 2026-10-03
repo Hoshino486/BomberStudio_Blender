@@ -40,7 +40,12 @@ def validate_addon_zip(filename):
             content[rel] = archive.read(info)
         for rel, payload in content.items():
             if rel.endswith('.py'):
-                ast.parse(payload.decode('utf-8-sig'), filename=rel)
+                source = payload.decode('utf-8-sig')
+                # Optional 4.1+ provider is deliberately inert on older Python.
+                # All zip path, size and symlink checks above still apply.
+                deferred = rel.startswith('vendor/io_scene_valvesource/') and bpy.app.version < (4, 1, 0)
+                if not deferred:
+                    ast.parse(source, filename=rel)
         init = content['__init__.py'].decode('utf8')
         if 'BomberStudio' not in init:
             raise ValueError("插件标识不匹配")
@@ -140,6 +145,7 @@ class BOMBER_OT_manage(bpy.types.Operator):
                 report = {
                     'addon': list(core.VERSION), 'blender': bpy.app.version_string,
                     'python': __import__('sys').version, 'source_model': source,
+                    'source_tools': dict(zip(('state', 'message'), __import__(__package__ + '.source_tools', fromlist=['status']).status())),
                     'sidecars': [source+s for s in core.SIDECARS if source and os.path.isfile(source+s)],
                     'importers': dict((group+'.'+name, C.op_available(group, name)) for group, name in
                                       [('import_scene', 'fbx'), ('wm', 'obj_import'), ('import_scene', 'obj'),

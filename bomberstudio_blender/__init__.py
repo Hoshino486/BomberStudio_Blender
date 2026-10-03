@@ -3,7 +3,7 @@
 bl_info = {
     'name': 'BomberStudio Blender Bridge',
     'author': 'BomberAi',
-    'version': (1, 0, 2),
+    'version': (1, 1, 0),
     'blender': (2, 79, 0),
     'location': 'View3D > Sidebar > BomberStudio (2.79: Tool Shelf)',
     'description': 'BomberStudio 导入、模型整理、骨架口型眼球、贴图预览与 PBR 图集',
@@ -16,9 +16,9 @@ import bpy
 # The same directory also carries a native 4.2+ extension manifest.
 if bpy.app.version >= (2, 80, 0):
     bl_info['blender'] = (2, 80, 0)
-from . import compat, properties, bridge, model_ops, rig_ops, materials, atlas, management, ui
+from . import compat, properties, bridge, model_ops, rig_ops, materials, atlas, management, source_tools, ui
 
-MODULES = (properties, bridge, model_ops, rig_ops, materials, atlas, management, ui)
+MODULES = (properties, bridge, model_ops, rig_ops, materials, atlas, management, source_tools, ui)
 _registered = []
 _menu = None
 
@@ -36,6 +36,7 @@ def register():
         _menu = getattr(bpy.types, 'TOPBAR_MT_file_import', None) or getattr(bpy.types, 'INFO_MT_file_import', None)
         if _menu:
             _menu.append(ui.menu_import)
+        source_tools.register_backend()
     except Exception:
         unregister()
         raise
@@ -43,6 +44,7 @@ def register():
 
 def unregister():
     global _menu
+    source_tools.unregister_backend()
     if _menu:
         try:
             _menu.remove(ui.menu_import)
