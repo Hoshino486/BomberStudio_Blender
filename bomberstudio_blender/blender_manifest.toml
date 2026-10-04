@@ -1,6 +1,6 @@
 schema_version = "1.0.0"
 id = "bomberstudio_blender"
-version = "1.1.1"
+version = "1.2.0"
 name = "BomberStudio Blender Bridge"
 tagline = "BomberStudio imports, character tools and texture atlases"
 maintainer = "BomberAi"
@@ -11,4 +11,4 @@ tags = ["Import-Export", "Material", "Mesh", "Rigging"]
 
 [permissions]
 files = "Read models and write atlases, backups, logs and local updates"
-network = "Check configured repository releases on explicit user request"
+network = "Check releases and download updates only on user request"

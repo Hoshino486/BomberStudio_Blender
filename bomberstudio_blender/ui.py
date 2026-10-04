@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 import bpy
-from . import compat as C, core, model_ops, rig_ops, source_tools
+from . import compat as C, core, model_ops, rig_ops, source_tools, online_update
 
 
 def model_button(layout, action, text=None):
@@ -317,13 +317,59 @@ class BOMBER_PT_updates(PanelBase, bpy.types.Panel):
     def draw(self, context):
         layout, cfg = self.layout, C.settings(context)
         layout.label(text='当前版本: ' + '.'.join(str(v) for v in core.VERSION))
-        layout.prop(cfg, 'update_repository')
-        manage_button(layout, 'CHECK_UPDATE', '手动检查本插件更新（15 秒超时）')
-        layout.label(text=cfg.update_status[:90])
-        manage_button(layout, 'OPEN_RELEASE', '打开 GitHub 发布页 / 下载更新')
-        layout.operator('bomberstudio.install_update')
-        manage_button(layout, 'RESTORE_UPDATE', '还原上一次插件备份')
-        layout.label(text='更新不自动安装，安装 / 回滚后重启 Blender')
+        busy = online_update.is_busy()
+        restart = online_update.restart_required()
+        settings = layout.column()
+        settings.enabled = not busy and not restart
+        settings.prop(cfg, 'update_repository')
+        if restart:
+            notice = layout.box()
+            notice.alert = True
+            notice.label(text='请保存工作并重启 Blender 完成更新', icon='ERROR')
+            notice.label(text=online_update._restart_message[:90])
+        elif busy:
+            state = online_update.progress_state()
+            labels = {'CHECKING': '正在检查 GitHub Release…', 'DOWNLOADING': '正在下载更新…',
+                      'VALIDATING': '正在校验包内版本与代码…'}
+            box = layout.box()
+            box.label(text=labels.get(state['phase'], '正在处理…'))
+            if state['total']:
+                box.label(text='进度：{:.0f}%（{} / {} KiB）'.format(
+                    state['progress'] * 100, state['received'] // 1024, state['total'] // 1024))
+            box.operator('bomberstudio.cancel_online_update', text='取消（也可按 Esc）')
+            box.label(text=cfg.update_status[:90])
+        else:
+            layout.operator('bomberstudio.online_update', text='手动检查更新').action = 'CHECK'
+            record = online_update.record_for(cfg.update_repository)
+            layout.label(text=cfg.update_status[:90])
+            if record and record['relation'] == 'NEWER':
+                box = layout.box()
+                box.label(text='存在可用更新！', icon='INFO')
+                row = box.row()
+                row.enabled = online_update.can_install(context)
+                row.scale_y = 1.4
+                row.operator('bomberstudio.online_update',
+                             text='立即更新至 ' + '.'.join(str(v) for v in record['remote_version']),
+                             icon='IMPORT').action = 'INSTALL'
+                if record.get('asset'):
+                    box.label(text='附件：' + record['asset']['name'])
+                    box.label(text='下载 → SHA256 校验 → 备份 → 安装')
+                    if not online_update.can_install(context):
+                        box.label(text='请重新检查，并确认 Blender 已开启在线访问')
+                else:
+                    box.label(text=record.get('asset_error', '')[:90], icon='ERROR')
+        layout.label(text='最近一次检查：' + cfg.update_last_check)
+        local = layout.column()
+        local.enabled = not busy and not restart
+        local.operator('bomberstudio.install_update')
+        backup = online_update.backup_info(context)
+        restore = layout.column()
+        restore.enabled = not busy and backup is not None
+        manage_button(restore, 'RESTORE_UPDATE', '还原上一次插件备份')
+        if backup:
+            layout.label(text='备份时间：' + backup.get('installed_at', '旧版备份'))
+        manage_button(layout, 'OPEN_RELEASE', '打开 GitHub 发布页')
+        layout.label(text='仅点击更新后下载；完成后手动重启，不关闭场景')
 
 
 class BOMBER_PT_credits(PanelBase, bpy.types.Panel):
@@ -333,12 +379,12 @@ class BOMBER_PT_credits(PanelBase, bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         layout.label(text='BomberStudio Blender Bridge')
-        layout.label(text='基于本机 BomberStudio 导出数据格式独立实现')
-        layout.label(text='界面与工作流参考 StarBobis / MIMIBlender')
-        layout.label(text='角色工具参考 Team Neoneko / Cats')
-        layout.label(text='无需同时安装 MIMI / Cats；不复制其自动更新器')
-        layout.label(text='内置 Blender Source Tools 3.4.3 · Tom Edwards')
+        layout.label(text='搭配工具BomberStudio 导出数据来使用')
+        layout.label(text='作者@CyberMot')
         layout.label(text='详细功能与测试范围见安装包 README.md')
+        layout.label(text='界面与工作流参考 StarBobis/MIMIBlender')
+        layout.label(text='角色工具参考 Team Neoneko /Cats')
+        layout.label(text='交流群517046892')
 
 
 CLASSES = (BOMBER_UL_textures, BOMBER_UL_materials, BOMBER_PT_quick, BOMBER_PT_source, BOMBER_PT_model, BOMBER_PT_textures,
